@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Jornadas - Blip & Unimed Grande Florianópolis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --verde-unimed: #007953;
+            --verde-unimed-light: #e6f2ed;
+            --azul-blip: #0091FF;
+            --dark-blip: #1A2433;
+            --bg-whatsapp: #efeae2;
+            --balao-bot: #ffffff;
+            --balao-user: #d9fdd3;
+            --txt-main: #111b21;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Lexend', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-blip) 0%, #0d1520 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Header com Logos */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            padding: 15px 35px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo-ugf {
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .logo-blip {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        /* Layout Principal */
+        main {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            gap: 40px;
+            justify-content: center;
+            align-items: stretch; /* Faz as colunas esticarem juntas */
+        }
+
+        /* Painel de Controle Lateral (Agora com scroll) */
+        .control-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 700px;
+            overflow-y: auto;
+        }
+
+        /* Custom Scrollbar para o painel */
+        .control-panel::-webkit-scrollbar { width: 8px; }
+        .control-panel::-webkit-scrollbar-track { background: transparent; }
+        .control-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+        .control-panel h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--azul-blip);
+            font-weight: 600;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            margin: 30px 0 15px 0;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+
+        .control-panel p.subtitle {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .journey-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: #fff;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .journey-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .journey-btn.active { border-color: var(--azul-blip); background: rgba(0, 145, 255, 0.12); }
+        .journey-btn h3 { font-size: 0.95rem; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+        .journey-btn p { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0; line-height: 1.4; }
+
+        /* Estilos dos Cards de KPI e Comparativo */
+        .info-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--verde-unimed);
+        }
+
+        .info-card h4 {
+            font-size: 0.95rem;
+            color: var(--verde-unimed-light);
+            margin-bottom: 8px;
+        }
+
+        .info-card p, .info-card ul {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        
+        .info-card ul {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+
+        .info-card li { margin-bottom: 6px; }
+        
+        .badge {
+            background: rgba(0, 145, 255, 0.2);
+            color: #60a5fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        /* Simulador de Smartphone */
+        .phone-container {
+            width: 385px;
+            height: 700px;
+            background: #000000;
+            border-radius: 44px;
+            padding: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
+            border: 4px solid #334155;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-whatsapp);
+            border-radius: 32px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Topbar do WhatsApp */
+        .wa-header {
+            background: var(--verde-unimed);
+            padding: 35px 15px 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+
+        .wa-avatar {
+            width: 38px; height: 38px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: var(--verde-unimed); font-size: 0.9rem;
+        }
+
+        .wa-info h4 { font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .wa-info p { font-size: 0.7rem; color: #e6f2ed; }
+        .wa-badge { background: #25D366; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+        /* Corpo do Chat */
+        .wa-chat-body {
+            flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth;
+        }
+
+        /* Balões de Mensagem */
+        .msg {
+            max-width: 85%; padding: 9px 12px; font-size: 0.85rem; position: relative; line-height: 1.4;
+            color: var(--txt-main); box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+        .msg-bot { background: var(--balao-bot); align-self: flex-start; border-radius: 0px 12px 12px 12px; }
+        .msg-user { background: var(--balao-user); align-self: flex-end; border-radius: 12px 0px 12px 12px; }
+        .msg-time { font-size: 0.65rem; color: #8696a0; text-align: right; margin-top: 4px; display: block; }
+
+        /* Componentes Meta UI */
+        .meta-list-container { margin-top: 8px; border-top: 1px solid #e9ecef; padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+        .meta-list-header { font-size: 0.75rem; font-weight: 600; color: #667781; padding: 4px 0; text-transform: uppercase; }
+        .meta-menu-option {
+            background: #f8f9fa; border: 1px solid #e9ecef; padding: 10px 12px; border-radius: 8px;
+            font-size: 0.85rem; color: #00a884; font-weight: 500; cursor: pointer; transition: all 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .meta-menu-option:hover { background: #e6f2ed; border-color: #00a884; }
+        .meta-menu-option::after { content: "➔"; font-size: 0.75rem; opacity: 0.7; }
+        
+        .meta-buttons-inline { display: flex; gap: 6px; margin-top: 8px; border-top: 1px solid #e9ecef; padding-top: 8px; flex-wrap: wrap; }
+        .meta-btn-quick {
+            flex: 1; min-width: 80px; background: #ffffff; color: #00a884; border: 1px solid #e9ecef;
+            padding: 8px; border-radius: 20px; font-weight: 500; font-size: 0.8rem; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .meta-btn-quick:hover { background: #f0f2f5; border-color: #00a884; }
+
+        /* Footer Input */
+        .wa-footer { background: #f0f2f5; padding: 10px; display: flex; align-items: center; gap: 10px; z-index: 2; }
+        .wa-input-mock { flex: 1; background: white; padding: 9px 15px; border-radius: 20px; font-size: 0.85rem; color: #667781; }
+        .wa-mic-mock {
+            width: 36px; height: 36px; background: var(--verde-unimed); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; color: white;
+        }
+
+        .doc-preview {
+            background: #f0f2f5; border-radius: 6px; padding: 8px; display: flex; align-items: center; gap: 10px; border-left: 4px solid #1573e6;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo_unimed.png" alt="Unimed Grande Florianópolis" class="logo-ugf">
+        <img src="Marca-Blip-_blue-black-2.png" alt="Blip" class="logo-blip">
+    </header>
+
+    <main>
+        <div class="control-panel">
+            <h2>Navegação Conversacional</h2>
+            <p class="subtitle">Selecione o cenário desejado para carregar a simulação exata utilizando componentes validados pela Meta.</p>
+            
+            <button class="journey-btn active" onclick="switchJourney('det_agenda')">
+                <h3>🟢 1. Agendamento Determinístico</h3>
+                <p>Navegação estruturada em etapas: Seleção de especialidade e menu subsequente de horários disponíveis.</p>
+            </button>
+
+            <button class="journey-btn" onclick="switchJourney('ia_agenda')">
+                <h3>🤖 2. Agendamento Inteligente</h3>
+                <p>Processamento de linguagem livre gerando um menu nativo de opções de horários baseados no contexto.</p>
+            </button>
+
+            <button class="journey-btn" onclick="switchJourney('det_status')">
+                <h3>🟢 3. Status de Guia (Transacional)</h3>
+                <p>Retorno direto de status de guias emitidas a partir do banco de dados.</p>
+            </button>
+
+            <button class="journey-btn" onclick="switchJourney('ia_status')">
+                <h3>🤖 4. Status de Guia (Resolução de Pendência)</h3>
+                <p>Análise de pendência complexa com esteira corretiva para upload de laudos.</p>
+            </button>
+
+            <h3 class="section-title">📊 Impacto & KPIs Esperados</h3>
+            
+            <div class="info-card">
+                <h4>Transformação do Atendimento</h4>
+                <p>Considerando que hoje 100% dos chats derivam para o atendimento humano, a adoção destas jornadas visa:</p>
+                <ul>
+                    <li><span class="badge">Retenção</span> <b>Deflection Rate:</b> Redução de até 60% no transbordo para agentes humanos em solicitações de rotina (agendamento e status).</li>
+                    <li><span class="badge">Velocidade</span> <b>TMA (Tempo Médio de Atendimento):</b> Resolução de chamados em segundos via autoatendimento 24/7.</li>
+                    <li><span class="badge">Receita</span> <b>Redução de No-Show:</b> Disparos ativos de confirmação liberam vagas ociosas no sistema.</li>
+                </ul>
+            </div>
+
+            <h3 class="section-title">⚖️ Comparativo: Sem IA vs. Com IA</h3>
+            
+            <div class="info-card" style="border-left-color: #64748b;">
+                <h4>Atendimento Tradicional (Sem IA)</h4>
+                <ul>
+                    <li><b>Navegação Engessada:</b> O paciente é forçado a seguir menus numéricos longos (1, 2, 3...) até encontrar o que deseja.</li>
+                    <li><b>Fricção na Busca:</b> Se o usuário não souber a especialidade correta, ele abandona o fluxo e pede para "falar com atendente".</li>
+                    <li><b>Gargalo Operacional:</b> Demandas simples que saem do script geram filas de espera no call center.</li>
+                </ul>
+            </div>
+
+            <div class="info-card" style="border-left-color: var(--azul-blip);">
+                <h4>Atendimento Cognitivo (Com IA)</h4>
+                <ul>
+                    <li><b>Acolhimento Natural:</b> O bot entende contextos e sintomas reais (ex: "estou com dor no joelho" ➔ direciona para Ortopedia).</li>
+                    <li><b>Visão Computacional (OCR):</b> Leitura automática de pedidos médicos por foto, eliminando digitação manual de códigos pelo usuário.</li>
+                    <li><b>Resolução Autônoma:</b> Explica recusas de guias com empatia e conduz a correção de pendências sem acionar o humano.</li>
+                </ul>
+            </div>
+            
+            <button class="journey-btn" style="text-align: center; justify-content: center; margin-top: 10px;" onclick="resetChat()">
+                🔄 Reiniciar Jornada Atual
+            </button>
+        </div>
+
+        <div class="phone-container">
+            <div class="phone-screen">
+                
+                <div class="wa-header">
+                    <div class="wa-avatar">U</div>
+                    <div class="wa-info">
+                        <h4>Unimed Floripa <span class="wa-badge"></span></h4>
+                        <p>Conta comercial oficial</p>
+                    </div>
+                </div>
+
+                <div class="wa-chat-body" id="chatBody">
+                    </div>
+
+                <div class="wa-footer">
+                    <div class="wa-input-mock">Mensagem</div>
+                    <div class="wa-mic-mock">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const journeys = {
+            det_agenda: [
+                {
+                    type: 'bot',
+                    text: 'Olá! Seja bem-vindo à <b>Unimed Grande Florianópolis</b>. Identifiquei seu plano contratual.<br><br>Por favor, selecione qual serviço da nossa <b>Rede Própria</b> você deseja agendar hoje:',
+                    listMenu: {
+                        header: 'Serviços Disponíveis',
+                        options: [
+                            { text: 'Pediatria (Unidade Centro)', next: 1 },
+                            { text: 'Clínica Médica (Hospital São José)', next: 1 },
+                            { text: 'Ginecologia (Unidade Palhoça)', next: 1 }
+                        ]
+                    }
+                },
+                {
+                    type: 'bot',
+                    text: 'Perfeito! Busquei as vagas em nosso sistema de gestão hospitalar.<br><br>Selecione um dos <b>horários disponíveis</b> para esta semana:',
+                    listMenu: {
+                        header: 'Horários Disponíveis',
+                        options: [
+                            { text: 'Quarta-feira às 09:30h', next: 2 },
+                            { text: 'Quarta-feira às 14:15h', next: 2 },
+                            { text: 'Quinta-feira às 10:00h', next: 2 }
+                        ]
+                    }
+                },
+                {
+                    type: 'bot',
+                    text: '🎉 <b>Agendamento Confirmado!</b><br><br>• Local: Unidade Selecionada UGF<br>• O preparo e o cartão de confirmação foram salvos em seu app Unimed.<br><br>A Unimed Grande Florianópolis agradece seu contato! 💚'
+                }
+            ],
+            ia_agenda: [
+                {
+                    type: 'bot',
+                    text: 'Olá! Sou o assistente inteligente da <b>Unimed Grande Florianópolis</b>. 🤖<br><br>Pode escrever livremente o que precisa agendar (ex: <i>"Quero marcar cardiologista para quarta de manhã"</i>).',
+                    actionSim: () => {
+                        setTimeout(() => {
+                            sendUserMessage("Quero passar com um clínico geral na quinta de tarde no Hospital de São José");
+                            setTimeout(() => {
+                                sendBotMessage("<b>Entendido! Consultando nossas agendas...</b><br>Buscando correspondências em tempo real para <code>Clínica Médica</code> na unidade <code>São José</code> para <code>Quinta-feira (Tarde)</code>.", null, null, () => {
+                                    setTimeout(() => {
+                                        sendBotMessage("Encontrei as seguintes opções ideais baseadas no seu pedido. Por favor, escolha a melhor para você:", {
+                                            header: 'Vagas Encontradas',
+                                            options: [
+                                                { text: 'Quinta às 14:30h (Dr. Mauro)', next: 1 },
+                                                { text: 'Quinta às 16:15h (Dra. Ana)', next: 1 }
+                                            ]
+                                        });
+                                    }, 1500);
+                                });
+                            }, 1200);
+                        }, 1500);
+                    }
+                },
+                {
+                    type: 'bot',
+                    text: 'Excelente escolha! Vaga reservada com sucesso. Nosso sistema já confirmou sua agenda. Até a consulta! 🟢'
+                }
+            ],
+            det_status: [
+                {
+                    type: 'bot',
+                    text: 'Entendido. Consultando o sistema de auditoria de guias da UGF...<br><br>Selecione o pedido para o qual deseja consultar o status de liberação:',
+                    listMenu: {
+                        header: 'Suas Guias Recentes',
+                        options: [
+                            { text: '📄 Pedido 45892 (Ressonância)', next: 1 },
+                            { text: '📄 Pedido 45710 (Hemograma)', next: 2 }
+                        ]
+                    }
+                },
+                {
+                    type: 'bot',
+                    text: '🔍 <b>Pedido #45892 - Ressonância Magnética</b><br><br>🟢 <b>STATUS: APROVADO</b><br><br>Sua guia já está totalmente liberada pela operadora!',
+                    buttons: [{ text: 'Voltar ao Menu Principal', next: 3 }]
+                },
+                {
+                    type: 'bot',
+                    text: '🔍 <b>Pedido #45710 - Hemograma Completo</b><br><br>🟡 <b>STATUS: EM ANÁLISE</b><br><br>Sua solicitação está passando por auditoria técnica de rotina. O prazo regulamentar é de até 48 horas.',
+                    buttons: [{ text: 'Entendido, obrigado', next: 3 }]
+                },
+                {
+                    type: 'bot',
+                    text: 'Caso precise de mais informações sobre suas guias, estamos à disposição.'
+                }
+            ],
+            ia_status: [
+                {
+                    type: 'bot',
+                    text: 'Olá! Como assistente da UGF, posso ajudar você com dúvidas sobre liberações de procedimentos. Me conte o que houve.',
+                    actionSim: () => {
+                        setTimeout(() => {
+                            sendUserMessage("Minha guia de fisioterapia deu pendência, o que aconteceu??");
+                            setTimeout(() => {
+                                sendBotMessage("Buscando o histórico no nosso sistema de auditoria médica... 🔄", null, null, () => {
+                                    setTimeout(() => {
+                                        sendBotMessage("<b>Resultado da Análise:</b><br>Identifiquei seu pedido de Fisioterapia. O status técnico aponta: <code>Pendente de Laudo Justificativo (DUT)</code>.<br><br><b>O que isso significa:</b> O plano precisa apenas que você nos envie a foto do pedido médico detalhado descrevendo a quantidade de sessões. Você tem esse documento em mãos?", null, [
+                                            { text: '📸 Sim, anexar agora', next: 1 },
+                                            { text: '❌ Não tenho aqui', next: 2 }
+                                        ]);
+                                    }, 1800);
+                                });
+                            }, 1200);
+                        }, 1500);
+                    }
+                },
+                {
+                    type: 'bot',
+                    text: 'Perfeito. Aguardando o envio do documento...',
+                    actionSim: () => {
+                        setTimeout(() => {
+                            sendUserDocument("pedido_medico_fisioterapia.pdf");
+                            setTimeout(() => {
+                                sendBotMessage("<b>Documento Recebido com sucesso!</b> 📄<br>Nosso sistema realizou a leitura inteligente e validou a assinatura do médico.<br><br>Sua guia foi reencaminhada para a mesa de aprovação com prioridade máxima. Você receberá um alerta assim que o status mudar para aprovado! 👍", null, null);
+                            }, 1800);
+                        }, 1500);
+                    }
+                },
+                {
+                    type: 'bot',
+                    text: 'Sem problemas. Assim que obtiver o documento com o seu médico cooperado, basta retornar aqui e digitar "enviar pendência". Tenha um excelente dia!'
+                }
+            ]
+        };
+
+        let currentJourneyId = 'det_agenda';
+        let currentStep = 0;
+
+        function switchJourney(key) {
+            currentJourneyId = key;
+            currentStep = 0;
+            document.querySelectorAll('.journey-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            resetChat();
+        }
+
+        function resetChat() {
+            document.getElementById('chatBody').innerHTML = '';
+            currentStep = 0;
+            renderStep();
+        }
+
+        function renderStep() {
+            const journey = journeys[currentJourneyId];
+            if (currentStep >= journey.length) return;
+
+            const stepData = journey[currentStep];
+            if (stepData.type === 'bot') {
+                sendBotMessage(stepData.text, stepData.listMenu, stepData.buttons, stepData.actionSim);
+            }
+        }
+
+        function sendBotMessage(htmlText, listMenu = null, buttons = null, callback = null) {
+            const chatBody = document.getElementById('chatBody');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg msg-bot';
+            
+            let content = `<div>${htmlText}</div>`;
+            
+            if (listMenu) {
+                content += `<div class="meta-list-container">`;
+                content += `<div class="meta-list-header">${listMenu.header}</div>`;
+                listMenu.options.forEach((opt) => {
+                    content += `<div class="meta-menu-option" onclick="handleMenuSelection('${opt.text}', ${opt.next})">${opt.text}</div>`;
+                });
+                content += `</div>`;
+            }
+
+            if (buttons && buttons.length > 0) {
+                content += `<div class="meta-buttons-inline">`;
+                buttons.forEach((btn) => {
+                    content += `<button class="meta-btn-quick" onclick="handleMenuSelection('${btn.text}', ${btn.next})">${btn.text}</button>`;
+                });
+                content += `</div>`;
+            }
+
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            content += `<span class="msg-time">${time}</span>`;
+            
+            msgDiv.innerHTML = content;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            if (callback) callback();
+        }
+
+        function sendUserMessage(text) {
+            const chatBody = document.getElementById('chatBody');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg msg-user';
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            msgDiv.innerHTML = `<div>${text}</div><span class="msg-time">${time}</span>`;
+            
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function sendUserDocument(fileName) {
+            const chatBody = document.getElementById('chatBody');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg msg-user';
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            msgDiv.innerHTML = `
+                <div class="doc-preview">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#667781"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    <span style="font-weight:500; font-size:0.8rem; color:#111b21;">${fileName}</span>
+                </div>
+                <span class="msg-time">${time}</span>`;
+            
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function handleMenuSelection(text, nextStep) {
+            sendUserMessage(text);
+            currentStep = nextStep;
+            setTimeout(() => {
+                renderStep();
+            }, 800);
+        }
+
+        renderStep();
+    </script>
+</body>
+</html>
